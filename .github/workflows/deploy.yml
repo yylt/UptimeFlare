@@ -65,18 +65,30 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.fetch_account_id.outputs.account_id }}
 
       - name: Install packages
+        shell: bash
         run: |
+          cat > uptime.config.ts <<'EOF'
+          ${{ secrets.CONFIG }}
+          EOF
           npm install
           cd worker
           npm install
 
       - name: Build worker
+        shell: bash
         run: |
+          cat > uptime.config.ts <<'EOF'
+          ${{ secrets.CONFIG }}
+          EOF
           cd worker
           npx wrangler deploy src/index.ts --outdir dist --dry-run
 
       - name: Build page
+        shell: bash
         run: |
+          cat > uptime.config.ts <<'EOF'
+          ${{ secrets.CONFIG }}
+          EOF
           npx @cloudflare/next-on-pages
 
       - name: Remove durable objects bindings (temporary workaround)
@@ -156,7 +168,11 @@ jobs:
 
       # Currently Terraform Cloudflare provider doesn't support direct upload, use wrangler to upload instead.
       - name: Upload pages
+        shell: bash
         run: |
+          cat > uptime.config.ts <<'EOF'
+          ${{ secrets.CONFIG }}
+          EOF
           npx wrangler pages deploy .vercel/output/static --project-name uptimeflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

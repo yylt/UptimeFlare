@@ -31,6 +31,9 @@ jobs:
         run: |
           cat uptime.config.ts
           cp uptime.config.ts /tmp/origin.config.ts
+          cat > /tmp/origin.config.ts <<'EOF'
+          ${{ secrets.CONFIG }}
+          EOF
 
       - name: Sync upstream changes
         id: sync
