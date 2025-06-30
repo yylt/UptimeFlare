@@ -1,3 +1,5 @@
+import { Resend } from "resend";
+
 async function getWorkerLocation() {
   const res = await fetch('https://cloudflare.com/cdn-cgi/trace')
   const text = await res.text()
@@ -110,10 +112,32 @@ async function notifyWithApprise(
   }
 }
 
+async function notifyWithEmail(
+  resendDomain: string,
+  resendKey: string,
+  mailto: string,
+  title: string,
+  body: string
+) {
+  try {
+    const resend = new Resend(resendKey);
+
+    await resend.emails.send({
+      from: `UptimeFlare <no-reply@${resendDomain}>`,
+      to: mailto,
+      subject: "Host State Notify",
+      text: title + '\n' + body,
+    });
+  } catch (error) {
+    console.log("Error sending email:" + error);
+  }  
+}
+
 export {
   getWorkerLocation,
   fetchTimeout,
   withTimeout,
   notifyWithApprise,
   formatStatusChangeNotification,
+  notifyWithEmail,
 }

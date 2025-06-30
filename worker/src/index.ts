@@ -1,5 +1,5 @@
 import { workerConfig, maintenances } from '../../uptime.config'
-import { formatStatusChangeNotification, getWorkerLocation, notifyWithApprise } from './util'
+import { formatStatusChangeNotification, getWorkerLocation, notifyWithApprise, notifyWithEmail } from './util'
 import { MonitorState, MonitorTarget } from '../../types/config'
 import { getStatus } from './monitor'
 import { DurableObject } from 'cloudflare:workers'
@@ -45,21 +45,29 @@ const Worker = {
         console.log(`Skipping notification for ${monitor.name} (in maintenance)`)
         return
       }
-
+      const notification = formatStatusChangeNotification(
+        monitor,
+        isUp,
+        timeIncidentStart,
+        timeNow,
+        reason,
+        workerConfig.notification?.timeZone ?? 'Etc/GMT'
+      )
       if (workerConfig.notification?.appriseApiServer && workerConfig.notification?.recipientUrl) {
-        const notification = formatStatusChangeNotification(
-          monitor,
-          isUp,
-          timeIncidentStart,
-          timeNow,
-          reason,
-          workerConfig.notification?.timeZone ?? 'Etc/GMT'
-        )
+        
         await notifyWithApprise(
           workerConfig.notification.appriseApiServer,
           workerConfig.notification.recipientUrl,
           notification.title,
           notification.body
+        )
+      } else if (workerConfig.notification?.resendDomain && workerConfig.notification?.resendKey && workerConfig.notification?.mailto) {
+        await notifyWithEmail(
+          workerConfig.notification.resendDomain,
+          workerConfig.notification.resendKey,
+          workerConfig.notification.mailto,
+          notification.title,
+          notification.body,
         )
       } else {
         console.log(

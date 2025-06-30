@@ -50,6 +50,9 @@ export type WorkerConfig = {
 export type Notification = {
   appriseApiServer?: string
   recipientUrl?: string
+  resendKey?: string
+  resendDomain?: string
+  mailto?: string
   timeZone?: string
   gracePeriod?: number
   skipNotificationIds?: string[]
